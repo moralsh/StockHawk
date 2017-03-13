@@ -8,7 +8,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.support.design.widget.Snackbar;
+import android.view.View;
+import android.widget.Toast;
 
+import com.udacity.stockhawk.R;
 import com.udacity.stockhawk.data.Contract;
 import com.udacity.stockhawk.data.PrefUtils;
 
@@ -74,6 +78,12 @@ public final class QuoteSyncJob {
 
                 Stock stock = quotes.get(symbol);
                 StockQuote quote = stock.getQuote();
+
+                if (stock.getName() == null) {
+                    PrefUtils.removeStock(context,symbol);
+                    // ToDo: notify the user
+                    break;
+                }
 
                 float price = quote.getPrice().floatValue();
                 float change = quote.getChange().floatValue();
@@ -165,6 +175,23 @@ public final class QuoteSyncJob {
             scheduler.schedule(builder.build());
 
 
+        }
+    }
+
+    public static boolean quoteExists(Context context, String symbol) {
+        Stock stock = null;
+        try {
+            stock = YahooFinance.get(symbol);
+        } catch (IOException e) {
+            return false;
+        }
+
+        if (stock.getName() == null) {
+            PrefUtils.removeStock(context,symbol);
+            // ToDo: notify the user
+            return false;
+        } else {
+            return true;
         }
     }
 
