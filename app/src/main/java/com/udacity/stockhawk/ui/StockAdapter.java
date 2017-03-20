@@ -2,6 +2,7 @@ package com.udacity.stockhawk.ui;
 
 
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -129,8 +130,19 @@ class StockAdapter extends RecyclerView.Adapter<StockAdapter.StockViewHolder> {
             int adapterPosition = getAdapterPosition();
             cursor.moveToPosition(adapterPosition);
             int symbolColumn = cursor.getColumnIndex(Contract.Quote.COLUMN_SYMBOL);
+            int historyColumn = cursor.getColumnIndex(Contract.Quote.COLUMN_HISTORY);
             clickHandler.onClick(cursor.getString(symbolColumn));
-            // ToDo Open new activity
+
+            String textEntered = "" + cursor.getString(historyColumn);
+
+            Context context = v.getContext();
+        /* This is the class that we want to start (and open) when the button is clicked. */
+            Class destinationActivity = StockDetail.class;
+
+            Intent startChildActivityIntent = new Intent(context, destinationActivity);
+
+            startChildActivityIntent.putExtra(Intent.EXTRA_TEXT, textEntered);
+            context.startActivity(startChildActivityIntent);
         }
 
 

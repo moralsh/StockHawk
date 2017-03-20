@@ -6,8 +6,11 @@ import android.content.ComponentName;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.preference.PreferenceManager;
+import android.support.annotation.IntDef;
 import android.support.design.widget.Snackbar;
 import android.view.View;
 import android.widget.Toast;
@@ -17,6 +20,8 @@ import com.udacity.stockhawk.data.Contract;
 import com.udacity.stockhawk.data.PrefUtils;
 
 import java.io.IOException;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashSet;
@@ -41,10 +46,19 @@ public final class QuoteSyncJob {
     private static final int PERIODIC_ID = 1;
     private static final int YEARS_OF_HISTORY = 2;
 
+    @Retention(RetentionPolicy.SOURCE)
+    @IntDef({QUOTE_STATUS_OK, QUOTE_STATUS_EMPTY_DATABASE, QUOTE_STATUS_NETWORK_DOWN, QUOTE_STATUS_UNKNOWN_QUOTE})
+    public @interface QuoteStatus {}
+
+    public static final int QUOTE_STATUS_OK = 0;
+    public static final int QUOTE_STATUS_NETWORK_DOWN = 1;
+    public static final int QUOTE_STATUS_UNKNOWN_QUOTE = 2;
+    public static final int QUOTE_STATUS_EMPTY_DATABASE = 3;
+
     private QuoteSyncJob() {
     }
 
-    static void getQuotes(Context context) {
+    static void getQuotes(Context context)  {
 
         Timber.d("Running sync job");
 
@@ -80,8 +94,7 @@ public final class QuoteSyncJob {
                 StockQuote quote = stock.getQuote();
 
                 if (stock.getName() == null) {
-                    PrefUtils.removeStock(context,symbol);
-                    // ToDo: notify the user
+                    PrefUtils.removeStock(context,symbol); // There's no data, we should remove it
                     break;
                 }
 
@@ -125,6 +138,11 @@ public final class QuoteSyncJob {
 
         } catch (IOException exception) {
             Timber.e(exception, "Error fetching stock quotes");
+            setQuoteStatus(context, QUOTE_STATUS_NETWORK_DOWN);
+
+        } catch (NullPointerException exception) {
+            Timber.e(exception, "Quote probably doesn't exist");
+            setQuoteStatus(context, QUOTE_STATUS_UNKNOWN_QUOTE);
         }
     }
 
@@ -178,22 +196,29 @@ public final class QuoteSyncJob {
         }
     }
 
-    public static boolean quoteExists(Context context, String symbol) {
-        Stock stock = null;
-        try {
-            stock = YahooFinance.get(symbol);
-        } catch (IOException e) {
-            return false;
-        }
-
-        if (stock.getName() == null) {
-            PrefUtils.removeStock(context,symbol);
-            // ToDo: notify the user
-            return false;
-        } else {
-            return true;
-        }
+    static private void setQuoteStatus(Context c, @QuoteStatus int quoteStatus){
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(c);
+        SharedPreferences.Editor spe = sp.edit();
+        spe.putInt(c.getString(R.string.pref_quote_status_key), quoteStatus);
+        spe.commit();
     }
+
+//    public static boolean quoteExists(Context context, String symbol) {
+//        Stock stock = null;
+//        try {
+//            stock = YahooFinance.get(symbol);
+//        } catch (IOException e) {
+//            return false;
+//        }
+//
+//        if (stock.getName() == null) {
+//            PrefUtils.removeStock(context,symbol);
+//            // ToDo: notify the user
+//            return false;
+//        } else {
+//            return true;
+//        }
+//    }
 
 
 }
