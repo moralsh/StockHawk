@@ -59,6 +59,7 @@ public final class QuoteSyncJob {
     }
 
     static void getQuotes(Context context)  {
+        boolean errorToNotify = false;
 
         Timber.d("Running sync job");
 
@@ -95,6 +96,8 @@ public final class QuoteSyncJob {
 
                 if (stock.getName() == null) {
                     PrefUtils.removeStock(context,symbol); // There's no data, we should remove it
+                    setQuoteStatus(context, QUOTE_STATUS_UNKNOWN_QUOTE);
+                    errorToNotify = true;
                     break;
                 }
 
@@ -125,7 +128,9 @@ public final class QuoteSyncJob {
                 quoteCV.put(Contract.Quote.COLUMN_HISTORY, historyBuilder.toString());
 
                 quoteCVs.add(quoteCV);
-
+                if (!errorToNotify) {
+                    setQuoteStatus(context, QUOTE_STATUS_OK);
+                }
             }
 
             context.getContentResolver()
@@ -202,23 +207,5 @@ public final class QuoteSyncJob {
         spe.putInt(c.getString(R.string.pref_quote_status_key), quoteStatus);
         spe.commit();
     }
-
-//    public static boolean quoteExists(Context context, String symbol) {
-//        Stock stock = null;
-//        try {
-//            stock = YahooFinance.get(symbol);
-//        } catch (IOException e) {
-//            return false;
-//        }
-//
-//        if (stock.getName() == null) {
-//            PrefUtils.removeStock(context,symbol);
-//            // ToDo: notify the user
-//            return false;
-//        } else {
-//            return true;
-//        }
-//    }
-
 
 }

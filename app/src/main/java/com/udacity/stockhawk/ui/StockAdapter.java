@@ -133,7 +133,8 @@ class StockAdapter extends RecyclerView.Adapter<StockAdapter.StockViewHolder> {
             int historyColumn = cursor.getColumnIndex(Contract.Quote.COLUMN_HISTORY);
             clickHandler.onClick(cursor.getString(symbolColumn));
 
-            String textEntered = "" + cursor.getString(historyColumn);
+            String history = "" + cursor.getString(historyColumn);
+            String title = "" + cursor.getString(symbolColumn);
 
             Context context = v.getContext();
         /* This is the class that we want to start (and open) when the button is clicked. */
@@ -141,7 +142,8 @@ class StockAdapter extends RecyclerView.Adapter<StockAdapter.StockViewHolder> {
 
             Intent startChildActivityIntent = new Intent(context, destinationActivity);
 
-            startChildActivityIntent.putExtra(Intent.EXTRA_TEXT, textEntered);
+            startChildActivityIntent.putExtra(Intent.EXTRA_TEXT, history);
+            startChildActivityIntent.putExtra(Intent.EXTRA_TITLE, title);
             context.startActivity(startChildActivityIntent);
         }
 

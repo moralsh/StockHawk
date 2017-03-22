@@ -6,26 +6,29 @@
     <string name="pref_stocks_key">stocks</string>
 
 
-    <string name="pref_display_mode_key">displayMode</string>
+    <string name="pref_display_mode_key" translatable="false">displayMode</string>
     <string name="pref_display_mode_default">@string/pref_display_mode_percentage_key</string>
 
     <string name="pref_display_mode_absolute_key">absolute</string>
     <string name="pref_display_mode_percentage_key">percentage</string>
 
-    <string name="default_stocks_yahoo">YHOO</string>
-    <string name="default_stocks_apple">AAPL</string>
-    <string name="default_stocks_microsoft">MSFT</string>
-    <string name="default_stocks_facebook">FB</string>
+    <string name="default_stocks_yahoo" translatable="false">YHOO</string>
+    <string name="default_stocks_apple" translatable="false">AAPL</string>
+    <string name="default_stocks_microsoft" translatable="false">MSFT</string>
+    <string name="default_stocks_facebook" translatable="false">FB</string>
 
     <string name="title_activity_detail">Stock Detail</string>
     <string name="action_change_units">@string/pref_display_mode_key</string>
 
+    <string name="menu_display_percentage">Display as percentage value</string>
+    <string name="menu_display_absolute">Display as absolute value</string>
 
     <string name="dialog_title">Add Stock</string>
     <string name="dialog_hint">Symbol (e.g. GOOG)</string>
     <string name="dialog_cancel">Cancel</string>
     <string name="dialog_add">Add</string>
 
+    <string name="detail_content_description">Stock History for %s</string>
     <!-- Key name for storing quote status in SharedPreferences -->
     <string name="pref_quote_status_key" translatable="false">quote-status</string>
 
@@ -34,6 +37,6 @@
 
     <string name="toast_stock_added_no_connectivity">Symbol %s added. Will refresh when network available.</string>
     <string name="toast_no_connectivity">Will refresh when network available.</string>
-    <string name="toast_unknown_symbol">The given symbol (%s) is unknown.</string>
+    <string name="toast_unknown_symbol">The given symbol is unknown.</string>
 
 </resources>

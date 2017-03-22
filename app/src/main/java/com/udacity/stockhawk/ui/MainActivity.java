@@ -2,10 +2,12 @@ package com.udacity.stockhawk.ui;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
@@ -116,6 +118,14 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         } else {
             error.setVisibility(View.GONE);
         }
+
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
+        int quoteStatus = sp.getInt(getString(R.string.pref_quote_status_key),0);
+
+        if (quoteStatus == 2) { //Quote doesn't exist
+            Toast.makeText(this, R.string.toast_unknown_symbol, Toast.LENGTH_LONG).show();
+            QuoteSyncJob.syncImmediately(this);
+        }
     }
 
     public void button(@SuppressWarnings("UnusedParameters") View view) {
@@ -131,13 +141,8 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                 String message = getString(R.string.toast_stock_added_no_connectivity, symbol);
                 Toast.makeText(this, message, Toast.LENGTH_LONG).show();
             }
-//            if (QuoteSyncJob.quoteExists(this, symbol)) {
                 PrefUtils.addStock(this, symbol);
                 QuoteSyncJob.syncImmediately(this);
-//            } else {
-//                String message = getString(R.string.toast_unknown_symbol, symbol);
-//                Toast.makeText(this, message, Toast.LENGTH_LONG).show();
-//            }
         }
     }
 
@@ -171,8 +176,10 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         if (PrefUtils.getDisplayMode(this)
                 .equals(getString(R.string.pref_display_mode_absolute_key))) {
             item.setIcon(R.drawable.ic_percentage);
+            item.setTitle(getString(R.string.menu_display_percentage));
         } else {
             item.setIcon(R.drawable.ic_dollar);
+            item.setTitle(getString(R.string.menu_display_absolute));
         }
     }
 
