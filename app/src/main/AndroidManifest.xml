@@ -32,6 +32,24 @@
             android:authorities="com.udacity.stockhawk"
             android:exported="false" />
 
+        <service android:name=".widget.StockWidgetRemoteViewsService"
+            android:permission="android.permission.BIND_REMOTEVIEWS"/>
+
+
+
+        <receiver android:name=".widget.StockWidgetProvider">
+
+            <intent-filter>
+                <action android:name="com.udacity.stockhawk.ACTION_DATA_UPDATED"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
+            </intent-filter>
+            <meta-data android:name="android.appwidget.provider"
+                android:resource="@xml/widget_info_stock"/>
+        </receiver>
+
+
+
         <service
             android:name=".sync.QuoteJobService"
             android:enabled="true"
