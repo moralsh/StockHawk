@@ -10,7 +10,6 @@ import android.widget.RemoteViewsService;
 import com.udacity.stockhawk.R;
 import com.udacity.stockhawk.data.Contract;
 import com.udacity.stockhawk.data.PrefUtils;
-import com.udacity.stockhawk.ui.DetailActivity;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -23,20 +22,20 @@ import java.util.Locale;
 public class StockWidgetFactory implements RemoteViewsService.RemoteViewsFactory {
     private Cursor mCursor;
     private Context mContext;
-    private Intent mIntent;
+
     static final int ID = 0;
     static final int SYMBOL =1;
     static final int PRICE=2;
     static final int ABSOLUTE_CHANGE = 3;
     static final int PERCENTAGE_CHANGE = 4;
     static final int HISTORY=5;
+
     private final DecimalFormat dollarFormatWithPlus;
     private final DecimalFormat dollarFormat;
     private final DecimalFormat percentageFormat;
 
     public StockWidgetFactory(Context context, Intent intent) {
         mContext = context;
-        mIntent = intent;
 
         dollarFormat = (DecimalFormat) NumberFormat.getCurrencyInstance(Locale.US);
         dollarFormatWithPlus = (DecimalFormat) NumberFormat.getCurrencyInstance(Locale.US);
@@ -57,8 +56,7 @@ public class StockWidgetFactory implements RemoteViewsService.RemoteViewsFactory
 
         final long identityToken = Binder.clearCallingIdentity();
 
-        mCursor =
-                mContext.getContentResolver().query(
+        mCursor = mContext.getContentResolver().query(
                         Contract.Quote.URI,
                         Contract.Quote.QUOTE_COLUMNS.toArray(new String[]{}),
                         null,
@@ -125,7 +123,7 @@ public class StockWidgetFactory implements RemoteViewsService.RemoteViewsFactory
         }
 
 
-        Intent fillInIntent = new Intent(mContext,DetailActivity.class);
+        Intent fillInIntent = new Intent();
         fillInIntent.putExtra(Intent.EXTRA_TEXT, mCursor.getString(HISTORY));
         fillInIntent.putExtra(Intent.EXTRA_TITLE, mCursor.getString(SYMBOL));
         remoteView.setOnClickFillInIntent(R.id.widget_main, fillInIntent);

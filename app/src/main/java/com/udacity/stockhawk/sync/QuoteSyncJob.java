@@ -17,6 +17,7 @@ import android.widget.Toast;
 
 import com.udacity.stockhawk.R;
 import com.udacity.stockhawk.data.Contract;
+import com.udacity.stockhawk.data.Messages;
 import com.udacity.stockhawk.data.PrefUtils;
 
 import java.io.IOException;
@@ -55,6 +56,8 @@ public final class QuoteSyncJob {
     public static final int QUOTE_STATUS_UNKNOWN_QUOTE = 2;
     public static final int QUOTE_STATUS_EMPTY_DATABASE = 3;
 
+    private static Messages messages;
+
     private QuoteSyncJob() {
     }
 
@@ -62,6 +65,7 @@ public final class QuoteSyncJob {
         boolean errorToNotify = false;
 
         Timber.d("Running sync job");
+        messages.clearMessages();
 
         Calendar from = Calendar.getInstance();
         Calendar to = Calendar.getInstance();
@@ -97,39 +101,37 @@ public final class QuoteSyncJob {
                 if (stock.getName() == null) {
                     PrefUtils.removeStock(context,symbol); // There's no data, we should remove it
                     setQuoteStatus(context, QUOTE_STATUS_UNKNOWN_QUOTE);
-                    errorToNotify = true;
-                    break;
-                }
+                    messages.appendMessage(messages.UNKNOWN_SYMBOL);
 
-                float price = quote.getPrice().floatValue();
-                float change = quote.getChange().floatValue();
-                float percentChange = quote.getChangeInPercent().floatValue();
+                } else {
 
-                // WARNING! Don't request historical data for a stock that doesn't exist!
-                // The request will hang forever X_x
-                List<HistoricalQuote> history = stock.getHistory(from, to, Interval.WEEKLY);
+                    float price = quote.getPrice().floatValue();
+                    float change = quote.getChange().floatValue();
+                    float percentChange = quote.getChangeInPercent().floatValue();
 
-                StringBuilder historyBuilder = new StringBuilder();
+                    // WARNING! Don't request historical data for a stock that doesn't exist!
+                    // The request will hang forever X_x
+                    List<HistoricalQuote> history = stock.getHistory(from, to, Interval.WEEKLY);
 
-                for (HistoricalQuote it : history) {
-                    historyBuilder.append(it.getDate().getTimeInMillis());
-                    historyBuilder.append(", ");
-                    historyBuilder.append(it.getClose());
-                    historyBuilder.append("\n");
-                }
+                    StringBuilder historyBuilder = new StringBuilder();
 
-                ContentValues quoteCV = new ContentValues();
-                quoteCV.put(Contract.Quote.COLUMN_SYMBOL, symbol);
-                quoteCV.put(Contract.Quote.COLUMN_PRICE, price);
-                quoteCV.put(Contract.Quote.COLUMN_PERCENTAGE_CHANGE, percentChange);
-                quoteCV.put(Contract.Quote.COLUMN_ABSOLUTE_CHANGE, change);
+                    for (HistoricalQuote it : history) {
+                        historyBuilder.append(it.getDate().getTimeInMillis());
+                        historyBuilder.append(", ");
+                        historyBuilder.append(it.getClose());
+                        historyBuilder.append("\n");
+                    }
+
+                    ContentValues quoteCV = new ContentValues();
+                    quoteCV.put(Contract.Quote.COLUMN_SYMBOL, symbol);
+                    quoteCV.put(Contract.Quote.COLUMN_PRICE, price);
+                    quoteCV.put(Contract.Quote.COLUMN_PERCENTAGE_CHANGE, percentChange);
+                    quoteCV.put(Contract.Quote.COLUMN_ABSOLUTE_CHANGE, change);
 
 
-                quoteCV.put(Contract.Quote.COLUMN_HISTORY, historyBuilder.toString());
+                    quoteCV.put(Contract.Quote.COLUMN_HISTORY, historyBuilder.toString());
 
-                quoteCVs.add(quoteCV);
-                if (!errorToNotify) {
-                    setQuoteStatus(context, QUOTE_STATUS_OK);
+                    quoteCVs.add(quoteCV);
                 }
             }
 

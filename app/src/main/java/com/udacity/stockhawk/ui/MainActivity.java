@@ -24,12 +24,20 @@ import android.widget.Toast;
 
 import com.udacity.stockhawk.R;
 import com.udacity.stockhawk.data.Contract;
+import com.udacity.stockhawk.data.Messages;
 import com.udacity.stockhawk.data.PrefUtils;
 import com.udacity.stockhawk.sync.QuoteSyncJob;
+
+import java.io.IOException;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import timber.log.Timber;
+import yahoofinance.Stock;
+import yahoofinance.YahooFinance;
 
 public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor>,
         SwipeRefreshLayout.OnRefreshListener,
@@ -46,6 +54,8 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     @BindView(R.id.error)
     TextView error;
     private StockAdapter adapter;
+
+    private Messages messages;
 
     @Override
     public void onClick(String symbol) {
@@ -99,6 +109,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         return networkInfo != null && networkInfo.isConnectedOrConnecting();
     }
 
+
     @Override
     public void onRefresh() {
 
@@ -120,12 +131,6 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         }
 
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
-        int quoteStatus = sp.getInt(getString(R.string.pref_quote_status_key),0);
-
-        if (quoteStatus == 2) { //Quote doesn't exist
-            Toast.makeText(this, R.string.toast_unknown_symbol, Toast.LENGTH_LONG).show();
-            QuoteSyncJob.syncImmediately(this);
-        }
     }
 
     public void button(@SuppressWarnings("UnusedParameters") View view) {
@@ -141,8 +146,27 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                 String message = getString(R.string.toast_stock_added_no_connectivity, symbol);
                 Toast.makeText(this, message, Toast.LENGTH_LONG).show();
             }
-                PrefUtils.addStock(this, symbol);
-                QuoteSyncJob.syncImmediately(this);
+
+            PrefUtils.addStock(this, symbol);
+            QuoteSyncJob.syncImmediately(this);
+        }
+    }
+
+    public void getMessages() {
+        if (messages.getCount() > 0) {
+            List<Integer> messagesList = messages.getMessages();
+            Iterator<Integer> myIterator = messagesList.iterator();
+            while ( myIterator.hasNext()) {
+                switch (myIterator.next()) {
+                    case 1:
+                        Toast.makeText(this, R.string.toast_unknown_symbol, Toast.LENGTH_LONG).show();
+                        break;
+                    default:
+                        break;
+                }
+
+            }
+            messages.clearMessages();
         }
     }
 
@@ -162,6 +186,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             error.setVisibility(View.GONE);
         }
         adapter.setCursor(data);
+        getMessages();
     }
 
 
